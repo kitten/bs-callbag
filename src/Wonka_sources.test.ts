@@ -303,6 +303,98 @@ describe('makeSubject', () => {
   });
 });
 
+describe('makeReplaySubject', () => {
+  it('emits values received after subscription', () => {
+    const { source, next, complete } = sources.makeReplaySubject(1);
+    const signals = collectSignals(source);
+    next(1);
+    next(2);
+    complete();
+
+    expect(signals).toEqual([
+      deriving.start(expect.any(Function)),
+      deriving.push(1),
+      deriving.push(2),
+      deriving.end(),
+    ]);
+  });
+
+  it('should replay values upon subscription', () => {
+    const { source, next, complete } = sources.makeReplaySubject(2);
+    next(1);
+    next(2);
+    const signals = collectSignals(source);
+    complete();
+
+    expect(signals).toEqual([
+      deriving.start(expect.any(Function)),
+      deriving.push(1),
+      deriving.push(2),
+      deriving.end(),
+    ]);
+  });
+
+  it('should only replay values within its buffer size', () => {
+    const { source, next, complete } = sources.makeReplaySubject(2);
+    next(1);
+    next(2);
+    next(3);
+    const signals = collectSignals(source);
+    complete();
+
+    expect(signals).toEqual([
+      deriving.start(expect.any(Function)),
+      deriving.push(2),
+      deriving.push(3),
+      deriving.end(),
+    ]);
+  })
+
+  it('should replay all values when buffer size is bigger than values length', () => {
+    const { source, next, complete } = sources.makeReplaySubject(3);
+    next(1);
+    next(2);
+    const signals = collectSignals(source);
+    complete();
+
+    expect(signals).toEqual([
+      deriving.start(expect.any(Function)),
+      deriving.push(1),
+      deriving.push(2),
+      deriving.end(),
+    ]);
+  })
+
+  it('should replay values and complete', () => {
+    const { source, next, complete } = sources.makeReplaySubject(2);
+    next(1);
+    next(2);
+    complete();
+    const signals = collectSignals(source);
+
+    expect(signals).toEqual([
+      deriving.start(expect.any(Function)),
+      deriving.push(1),
+      deriving.push(2),
+      deriving.end(),
+    ]);
+  })
+
+  it('should not replay values received after completion', () => {
+    const { source, next, complete } = sources.makeReplaySubject(2);
+    next(1);
+    complete();
+    next(2);
+    const signals = collectSignals(source);
+
+    expect(signals).toEqual([
+      deriving.start(expect.any(Function)),
+      deriving.push(1),
+      deriving.end(),
+    ]);
+  })
+});
+
 describe('never', () => {
   it('emits nothing and ends immediately', () => {
     const signals = collectSignals(sources.never);
