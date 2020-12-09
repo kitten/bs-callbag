@@ -14,6 +14,7 @@
       "types": "./dist/types/src/Wonka.d.ts",
       "source": "./src/Wonka.ts"
     },
+    "./src/Wonka.bs.js": "./src/Wonka.bs.js",
     "./package.json": "./package.json",
     "./": "./"
   },
